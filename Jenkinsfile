@@ -25,7 +25,7 @@ pipeline {
       steps {
         sh '''#!/usr/bin/env bash
           echo "Shell Process ID: $$"
-          docker build --tag "samplewebapp:${env.GIT_COMMIT}" .
+          docker build --tag 'samplewebapp:${env.GIT_COMMIT}' .
         '''
       }
     }
