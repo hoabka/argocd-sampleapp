@@ -22,10 +22,6 @@ pipeline {
         script {
           GIT_COMMIT = sh(returnStdout: true, script: "git log -n 1 --pretty=format:'%h'").trim()
         }
-        sh '''#!/usr/bin/env bash
-          echo "Shell Process ID: $$"
-          printenv
-        '''
       }
     }
     stage('docker-build') {
@@ -59,8 +55,9 @@ pipeline {
       steps {
         sh '''#!/usr/bin/env bash
           echo "Shell Process ID: $$"
+          git config --global user.email "ci@ci.com"
+          git config --global user.name "jenkins-ci"
           git clone https://$GIT_CREDS_USR:$GIT_CREDS_PSW@github.com/hoabka/argocd-k8s-manifest.git
-          git config --global user.email 'ci@ci.com'
           cd ./dev && kustomize edit set image ${REGISTRY}/samplewebapp:${GIT_COMMIT}
           git commit -am 'Publish new version' && git push || echo 'no changes'
         '''
