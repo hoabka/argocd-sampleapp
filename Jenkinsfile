@@ -25,7 +25,7 @@ pipeline {
       steps {
         sh '''#!/usr/bin/env bash
           echo "Shell Process ID: $$"
-          docker build --tag 'samplewebapp:${env.GIT_COMMIT}' .
+          docker build --tag ${REGISTRY}/samplewebapp:${env.GIT_COMMIT} .
         '''
       }
     }
@@ -40,8 +40,7 @@ pipeline {
           echo "Shell Process ID: $$"
           region=`echo $REGISTRY | awk -F '.' '{print $4}'`
           aws ecr get-login-password --region ${region} | docker login --username AWS --password-stdin ${REGISTRY}
-          docker tag 'samplewebapp:${env.GIT_COMMIT}' '${REGISTRY}/samplewebapp:${env.GIT_COMMIT}'
-          docker push '${REGISTRY}/samplewebapp:${env.GIT_COMMIT}'
+          docker push ${REGISTRY}/samplewebapp:${env.GIT_COMMIT}
         '''
       }
     }
@@ -51,7 +50,7 @@ pipeline {
           echo "Shell Process ID: $$"
           git clone https://$GIT_CREDS_USR:$GIT_CREDS_PSW@github.com/hoabka/argocd-k8s-manifest.git
           git config --global user.email 'ci@ci.com'
-          cd ./dev && kustomize edit set image '${REGISTRY}/samplewebapp:${env.GIT_COMMIT}'
+          cd ./dev && kustomize edit set image ${REGISTRY}/samplewebapp:${env.GIT_COMMIT}
           git commit -am 'Publish new version' && git push || echo 'no changes'
         '''
       }
@@ -60,7 +59,7 @@ pipeline {
       steps {
         input message:'Approve deployment?'
         sh '''#!/usr/bin/env bash
-          cd ./prod && kustomize edit set image '${REGISTRY}/samplewebapp:${env.GIT_COMMIT}'
+          cd ./prod && kustomize edit set image ${REGISTRY}/samplewebapp:${env.GIT_COMMIT}
           git commit -am 'Publish new version' && git push || echo 'no changes'
         '''
       }
