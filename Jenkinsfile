@@ -58,7 +58,7 @@ pipeline {
           git config --global user.email "ci@ci.com"
           git config --global user.name "jenkins-ci"
           git clone https://$GIT_CREDS_USR:$GIT_CREDS_PSW@github.com/hoabka/argocd-k8s-manifest.git
-          cd ./dev && kustomize edit set image ${REGISTRY}/samplewebapp:${GIT_COMMIT}
+          cd ./argocd-k8s-manifest/dev && kustomize edit set image ${REGISTRY}/samplewebapp:${GIT_COMMIT}
           git commit -am 'Publish new version' && git push || echo 'no changes'
         '''
       }
@@ -67,8 +67,8 @@ pipeline {
       steps {
         input message:'Approve deployment?'
         sh '''#!/usr/bin/env bash
-          cd ./prod && kustomize edit set image ${REGISTRY}/samplewebapp:${GIT_COMMIT}
-          git commit -am 'Publish new version' && git push || echo 'no changes'
+          cd ./argocd-k8s-manifest/prod && kustomize edit set image ${REGISTRY}/samplewebapp:${GIT_COMMIT}
+          git commit -am 'Publish new version' && git push origin main || echo 'no changes'
         '''
       }
     }
