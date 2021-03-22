@@ -12,16 +12,8 @@ pipeline {
   environment {
     AWS_ACCESS_KEY_ID     = credentials('PACKER_AWS_ACCESS_KEY')
     AWS_SECRET_ACCESS_KEY = credentials('PACKER_AWS_SECRET_KEY')
-    WORK_SUB_DIR          = 'container-based'
     REGISTRY              = '633834615594.dkr.ecr.us-west-2.amazonaws.com'
-  }
-
-  parameters {
-    string(
-      name: 'artifactURL',
-      defaultValue: 'https://github.com/AKSarav/SampleWebApp/raw/master/dist/SampleWebApp.war',
-      description: 'Application artifact URL'
-    )
+    GIT_CREDS             = credentials('git')
   }
 
   stages {
@@ -33,8 +25,7 @@ pipeline {
       steps {
         sh '''#!/usr/bin/env bash
           echo "Shell Process ID: $$"
-          cd "${WORK_SUB_DIR}"
-          docker build --tag "samplewebapp:${BUILD_NUMBER}" --build-arg "artifactURL=${artifactURL}" .
+          docker build --tag "samplewebapp:${env.GIT_COMMIT}" .
         '''
       }
     }
@@ -50,19 +41,30 @@ pipeline {
           cd "${WORK_SUB_DIR}"
           region=`echo $REGISTRY | awk -F '.' '{print $4}'`
           aws ecr get-login-password --region ${region} | docker login --username AWS --password-stdin ${REGISTRY}
-          docker tag samplewebapp:${BUILD_NUMBER} "${REGISTRY}/samplewebapp:${BUILD_NUMBER}"
-          docker push "${REGISTRY}/samplewebapp:${BUILD_NUMBER}"
-          echo "IMAGE_NAME=${REGISTRY}/samplewebapp:${BUILD_NUMBER}" > build.properties
+          docker tag samplewebapp:${env.GIT_COMMIT} "${REGISTRY}/samplewebapp:${env.GIT_COMMIT}"
+          docker push "${REGISTRY}/samplewebapp:${env.GIT_COMMIT}"
+          echo "IMAGE_NAME=${REGISTRY}/samplewebapp:${env.GIT_COMMIT}" > build.properties
         '''
       }
     }
-    stage('Archive properties') {
-      options {
-        timeout(time: 10, unit: 'MINUTES')
-      }
-
+     stage('Deploy DEV') {
       steps {
-        archiveArtifacts artifacts: 'container-based/build.properties'
+        sh '''#!/usr/bin/env bash
+          echo "Shell Process ID: $$"
+          git clone https://$GIT_CREDS_USR:$GIT_CREDS_PSW@github.com/hoabka/argocd-k8s-manifest.git
+          git config --global user.email 'ci@ci.com'
+          cd ./dev && kustomize edit set image ${REGISTRY}/samplewebapp:${env.GIT_COMMIT}
+          git commit -am 'Publish new version' && git push || echo 'no changes'
+        '''
+      }
+    }
+     stage('Deploy PROD') {
+      steps {
+        input message:'Approve deployment?'
+        sh '''#!/usr/bin/env bash
+          cd ./prod && kustomize edit set image ${REGISTRY}/samplewebapp:${env.GIT_COMMIT}
+          git commit -am 'Publish new version' && git push || echo 'no changes'
+        '''
       }
     }
   }
