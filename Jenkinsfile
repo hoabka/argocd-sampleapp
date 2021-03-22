@@ -17,6 +17,17 @@ pipeline {
   }
 
   stages {
+    stage('Get GIT_COMMIT') {
+      steps {
+        script {
+          GIT_COMMIT = sh(returnStdout: true, script: "git log -n 1 --pretty=format:'%h'").trim()
+        }
+        sh '''#!/usr/bin/env bash
+          echo "Shell Process ID: $$"
+          printenv
+        '''
+      }
+    }
     stage('docker-build') {
       options {
         timeout(time: 10, unit: 'MINUTES')
