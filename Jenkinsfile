@@ -13,6 +13,7 @@ pipeline {
     AWS_ACCESS_KEY_ID     = credentials('PACKER_AWS_ACCESS_KEY')
     AWS_SECRET_ACCESS_KEY = credentials('PACKER_AWS_SECRET_KEY')
     REGISTRY              = 'public.ecr.aws/z0a9d4i1'
+    REGION                = 'us-west-2'
     GIT_CREDS             = credentials('git')
   }
 
@@ -45,8 +46,7 @@ pipeline {
       steps {
         sh '''#!/usr/bin/env bash
           echo "Shell Process ID: $$"
-          region=`echo $REGISTRY | awk -F '.' '{print $4}'`
-          aws ecr get-login-password --region ${region} | docker login --username AWS --password-stdin ${REGISTRY}
+          aws ecr get-login-password --region ${REGION} | docker login --username AWS --password-stdin ${REGISTRY}
           docker push ${REGISTRY}/samplewebapp:${GIT_COMMIT}
         '''
       }
