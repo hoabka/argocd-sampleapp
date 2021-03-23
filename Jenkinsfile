@@ -46,7 +46,7 @@ pipeline {
       steps {
         sh '''#!/usr/bin/env bash
           echo "Shell Process ID: $$"
-          aws ecr get-login-password --region ${REGION} | docker login --username AWS --password-stdin ${REGISTRY}
+          aws ecr-public get-login-password --region ${REGION} | docker login --username AWS --password-stdin ${REGISTRY}
           docker push ${REGISTRY}/samplewebapp:${GIT_COMMIT}
         '''
       }
