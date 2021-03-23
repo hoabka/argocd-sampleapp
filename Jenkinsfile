@@ -57,6 +57,7 @@ pipeline {
           echo "Shell Process ID: $$"
           git config --global user.email "ci@ci.com"
           git config --global user.name "jenkins-ci"
+          rm -rf argocd-k8s-manifest
           git clone https://$GIT_CREDS_USR:$GIT_CREDS_PSW@github.com/hoabka/argocd-k8s-manifest.git
           cd ./argocd-k8s-manifest/dev && kustomize edit set image ${REGISTRY}/samplewebapp:${GIT_COMMIT}
           git commit -am 'Publish new version' && git push || echo 'no changes'
