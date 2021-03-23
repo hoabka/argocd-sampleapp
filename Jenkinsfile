@@ -12,7 +12,7 @@ pipeline {
   environment {
     AWS_ACCESS_KEY_ID     = credentials('PACKER_AWS_ACCESS_KEY')
     AWS_SECRET_ACCESS_KEY = credentials('PACKER_AWS_SECRET_KEY')
-    REGISTRY              = '633834615594.dkr.ecr.us-west-2.amazonaws.com'
+    REGISTRY              = 'public.ecr.aws/z0a9d4i1'
     GIT_CREDS             = credentials('git')
   }
 
