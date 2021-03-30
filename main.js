@@ -12,7 +12,7 @@ if (process.env.ENVIRONMENT === 'prod') {
 const server = http.createServer((_, res) => {
   res.statusCode = 200;
   res.setHeader('Content-Type', 'text/plain');
-  res.end('Hello, Hello Forks! Nice to meet you\n');
+  res.end('Hello Forks! Nice to meet you\n');
 });
 
 
